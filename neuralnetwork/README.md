@@ -14,6 +14,11 @@ Neural networks are the building blocks of almost all machine learning applicati
 
 - Supports batch size
 
+# Challenges
+The concept of backpropagation was difficult to implement. Obtaining the derivatives of the loss function with respect to the individual weights was not easy, given how the network architecture can change.
+
+The [article](https://towardsdatascience.com/math-neural-network-from-scratch-in-python-d6da9f29ce65#6aba) by Omar Aflak helped introduce me to a clever approach to backpropagation.
+
 # Improvements
 - Use `sklearn.sparse_matrix` for performance efficient (stores sparse matrix in a more memory efficient manner)
 - Implement Stochastic Gradient Descent instead of regular gradient descent
