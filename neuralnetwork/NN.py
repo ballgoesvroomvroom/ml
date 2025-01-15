@@ -38,7 +38,7 @@ class Layer():
 		input_size: integer, number of neurons (or inputs) that connects the previous layer)
 		"""
 		# initialise random weights
-		weights = np.random.rand(input_size)
+		weights = np.random.randn(input_size) *np.sqrt(1 /input_size)
 		# weights = np.ones(input_size)
 
 		# initialise with bias set to 0
@@ -89,13 +89,13 @@ class NeuralNetwork():
 	"""
 	contains layers of neuron and activation function
 	"""
-	def __init__(self, layers, learning_rate=0.1):
+	def __init__(self, layers, learning_rate=0.01):
 		"""
 		layers: Layer[], contains the layers for the network, first and last element contains the input and output layer; therefore, min length for layers is 2 
 		learning_rate: float, influences step size when learning weights
 		"""
 		self.layers = layers
-		self.learning_rate = 0
+		self.learning_rate = learning_rate
 
 	def compile(self):
 		"""
@@ -118,34 +118,72 @@ class NeuralNetwork():
 		fits the network with the provided data
 		performs backpropagation with gradient descent to learn the weights
 		"""
-
-		# feedforward
-		pred = []
-		for sample in x:
-			prev = sample
-			for layer in self.layers:
-				prev = layer.outcome(prev)
-				print("prev", prev)
-			pred.append(prev)
-
 		# 250 epochs
-		for i in range(250):
-			# compute total SSR for this sample
-			SSR = 0 # SSR for all observations
-			for i, sample in enumerate(x):
-				prev = sample
+		for epoch in range(250):
+			total_loss = 0 # use mean squared residuals (mse) as loss function
+			predictions = []
+
+			for sample_idx, sample in enumerate(x):
+				# feedforward
+				activations = [] # store activations to help compute loss function derivatives with respect to the individual weights
+				current_sample_activation = []
 				for layer in self.layers:
-					prev = layer.outcome(prev)
+					if (len(activations) >= 1):
+						# subsequent layer, pass in output from previous layer as the input to this current layer
+						activations.append(layer.outcome(activations[-1]))
+					else:
+						# first layer, pass in input
+						activations.append(layer.outcome(sample))
 
-				# compute squared residual
-				sr = (y[i] - prev) **2
-				SSR += sr
+				# compute total loss
+				# activations[-1] stores the output of the final layer, aka prediction output
+				loss = ((y[sample_idx] -activations[-1]) **2).mean() # mse
+				total_loss += loss
 
-			# compute derivatives to calculate step size (influenced by learning rate)
-			
+				# dE/dY, derivative of loss function (error) with respect to prediction output
+				# sum of squared residuals prime = 2(y-y^), where y is predicted and y^ is ground truth
+				loss_derivative_output = np.array([2 *(activations[-1] -y[sample_idx]) /y[sample_idx].size]) # wrap in brackets to convert from 1D array to 2D array (important for computing dot product later)
+
+				# backpropagation
+				# start from outer most layer - output layer first (because dE/dX for the subsequent layer can be computed by the current dE/dY for the current layer, where X is the input and Y is the output)
+				for i in range(len(self.layers) -1, 0, -1): # dont traverse input layer (first layer) since there are no weights there
+					layer = self.layers[i]
+
+					# compute dE/dW, derivative of loss function (error) with respect to individual weights in layer
+					# where W.shape = (output_neuron, input_neuron)
+
+					# goal is to find the rate of change (differentiaton) of the loss function (error) with respect to the weight
+					# work out entire neural network equation to differentiate is not feasible
+					# hence using chain rule, dE/dw(ij) = dE/dy1 * dy1/dw(ij) + ... + dE/dy1 * dyj/dw(ij), where i is number of input neruons, j is number of output neurons
+					# dE/dW = dot_product(X^t, dE/dY)
+					# localised to only one layer at a time
+					X = np.array([activations[i -1]]) # wrap in brackets to convert from 1D array to 2D array
+					loss_derivative_weights = X.T @ loss_derivative_output # dot product of both matrix
+
+					# do the same for bias
+					# dE/dB = [dE/db1, dE/db2, ..., dE/db(j)], where j is the number of output neurons
+					# dE/db(j) = dE/dy1 * dy1/db(j) + ... + dE/dy(j) * dy(j)/db(j) = dE/dy(j) = dE/dY
+					loss_derivative_biases = loss_derivative_output
+
+					# compute dE/dX to be used by the previous layer
+					# dE/dX = [dE/dx1, ..., dE/dx(i)], where i is the number of input neurons
+					loss_derivative_input = loss_derivative_output @ loss_derivative_weights.T
+
+					# adjust weights
+					for neuron_idx, weight_error in enumerate(loss_derivative_weights.T):
+						layer.neurons[neuron_idx].weights -= weight_error *self.learning_rate
+						layer.neurons[neuron_idx].bias -= loss_derivative_biases.T[neuron_idx][0] *self.learning_rate
+
+					# set output
+					loss_derivative_output = loss_derivative_input # where dE/dX is the output of the next previous layer we will traverse to
+
+				predictions.append(activations[-1])
+
+			# compute average loss
+			print("avg loss", total_loss /y.size)
 
 		# todo: implement backpropagation
-		return pred
+		return predictions
 
 
 
