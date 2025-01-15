@@ -1,5 +1,5 @@
 # Dataset
-Obtain dataset used in this project was from [ml.chenghock.com/nn](ml.chenghock.com/neuralnetwork) (citation: [ml.chenghock.com/nn/cite](ml.chenghock.com/neuralnetwork/cite))
+Obtain dataset used in this project was from [ml.chenghock.com/nn/MNIST_CSV.zip](ml.chenghock.com/nn/MNIST_CSV.zip) (citation: [ml.chenghock.com/nn/cite](ml.chenghock.com/neuralnetwork/cite))
 
 Taken from the [MNIST database](https://en.wikipedia.org/wiki/MNIST_database) containing 28x28 pixel images of handwritten digits.
 
