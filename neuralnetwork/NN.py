@@ -128,6 +128,22 @@ class NeuralNetwork():
 				print("prev", prev)
 			pred.append(prev)
 
+		# 250 epochs
+		for i in range(250):
+			# compute total SSR for this sample
+			SSR = 0 # SSR for all observations
+			for i, sample in enumerate(x):
+				prev = sample
+				for layer in self.layers:
+					prev = layer.outcome(prev)
+
+				# compute squared residual
+				sr = (y[i] - prev) **2
+				SSR += sr
+
+			# compute derivatives to calculate step size (influenced by learning rate)
+			
+
 		# todo: implement backpropagation
 		return pred
 
