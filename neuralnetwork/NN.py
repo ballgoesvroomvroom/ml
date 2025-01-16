@@ -5,7 +5,6 @@ with feedforward and backpropagation (with gradient descent) implementation
 from here onwards, the term "network" is the short form of "neural networks"
 """
 import math
-import random
 import numpy as np
 
 class Layer():
