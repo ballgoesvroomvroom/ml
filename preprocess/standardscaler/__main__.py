@@ -16,6 +16,8 @@ class StandardScaler():
 		self.features_mean = X.mean(axis=0) # mean for each column (feature)
 		self.features_std = X.std(axis=0) # standard deviation for each column (feature)
 
+		self.features_std[self.features_std == 0] = 1 # replace values of 0 by 1 to avoid division by zero error
+
 		return self
 
 
